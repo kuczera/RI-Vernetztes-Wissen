@@ -29,8 +29,9 @@ MATCH
 (startPerson:IndexPerson)-[:PERSON_IN]->
 (regest:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
 WHERE startPerson.registerId in ['H4P01822', 'H4P00926']
+AND startPerson.registerId <> endPerson.registerId
 WITH startPerson, endPerson, count(regest) as anzahl,
-collect(regest.ident) as idents
+collect(distinct(regest.identifier)) as idents
 CALL apoc.create.vRelationship(startPerson, "APPEARS_WITH",
 {anzahl:anzahl, regesten:idents}, endPerson) YIELD rel
 RETURN startPerson, endPerson, rel;
@@ -42,8 +43,9 @@ MATCH
 -[:PERSON_IN]->(regest2:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
 WHERE startPerson.registerId in ['H4P00926']
 AND endPerson.registerId in ['H4P01822']
-RETURN DISTINCT startPerson.name1, regest1.ident, regest1.text,
-middlePerson.name1, regest2.ident, regest2.text, endPerson.name1;
+AND startPerson.registerId <> endPerson.registerId
+RETURN DISTINCT startPerson.name1, regest1.identifier, regest1.summary,
+middlePerson.name1, regest2.identifier, regest2.summary, endPerson.name1;
 
 // Robert II. von Flandern mit Regesten und weiteren Entitäten
 MATCH (n:IndexPerson)-[:PERSON_IN]->(r)--(e)
