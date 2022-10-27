@@ -1,53 +1,50 @@
 // 1 - Robert II. von Flandern
-MATCH (n:IndexPerson)
-WHERE n.label contains 'Robert II. von Flandern'
+MATCH (n:IndexPerson) WHERE n.xmlId = 'RI003-002-P02526'
 RETURN *;
 
 // 2 - Robert II. von Flandern mit Netzwerk
-MATCH (n:IndexPerson)-[:PERSON_IN]->(r:Regesta)<-[:PERSON_IN]-
+MATCH (n:IndexPerson)-[:APPEARS_IN]->(r:Regesta)<-[:APPEARS_IN]-
 (m:IndexPerson)
-WHERE n.label contains 'Robert II. von Flandern'
+WHERE n.xmlId = 'RI003-002-P02526'
 RETURN *;
 
-// 3 - Robert II. von Flandern und Herzog Heinrich von Niederlothringen
+// 3 - Robert II. von Flandern und Herzog Heinrich von Niederlothringen mit Netzwerk
 MATCH
-(n:IndexPerson)-[:PERSON_IN]->
-(r:Regesta)<-[:PERSON_IN]-(m:IndexPerson)
-WHERE n.label contains 'Robert II. von Flandern'
-AND m.registerId = 'Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg'
+(n:IndexPerson)-[:APPEARS_IN]->
+(r:Regesta)<-[:APPEARS_IN]-(m:IndexPerson)
+WHERE n.xmlId = 'RI003-002-P02526'
+AND m.xmlId = 'RI003-002-P01291'
 RETURN *;
 
 // 4 - Robert und Heinrich mit gemeinsamen Bekannten
-MATCH (n0:IndexPerson)-->(r1:Regesta)--(n:IndexPerson)
-MATCH (m:IndexPerson)--(r2:Regesta)--(n3:IndexPerson)
-WHERE n.label contains 'Robert II. von Flandern'
-AND m.registerId = 'Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg'
+MATCH
+(startPerson:IndexPerson)-[:APPEARS_IN]->
+(regest:Regesta)<-[:APPEARS_IN]-(endPerson:IndexPerson)
+WHERE startPerson.xmlId in ['RI003-002-P02526', 'RI003-002-P01291']
 RETURN *;
 
 // 5 - Bekannten Graph
 MATCH
-(startPerson:IndexPerson)-[:PERSON_IN]->
-(regest:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
-WHERE startPerson.registerId in ['Robert II. von Flandern', 'Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg']
-AND startPerson.registerId <> endPerson.registerId
+(startPerson:IndexPerson)-[:APPEARS_IN]->
+(regest:Regesta)<-[:APPEARS_IN]-(endPerson:IndexPerson)
+WHERE startPerson.xmlId in ['RI003-002-P02526', 'RI003-002-P01291']
 WITH startPerson, endPerson, count(regest) as anzahl,
-collect(distinct(regest.identifier)) as idents
+collect(regest.identifier) as idents
 CALL apoc.create.vRelationship(startPerson, "APPEARS_WITH",
 {anzahl:anzahl, regesten:idents}, endPerson) YIELD rel
 RETURN startPerson, endPerson, rel;
 
 // 6 - Bekannten Tabelle
 MATCH
-(startPerson:IndexPerson)-[:PERSON_IN]->
-(regest1:Regesta)<-[:PERSON_IN]-(middlePerson:IndexPerson)
--[:PERSON_IN]->(regest2:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
-WHERE startPerson.registerId in ['Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg']
-AND endPerson.registerId in ['Robert II. von Flandern']
-AND startPerson.registerId <> endPerson.registerId
-RETURN DISTINCT startPerson.name1, regest1.identifier, regest1.summary,
-middlePerson.name1, regest2.identifier, regest2.summary, endPerson.name1;
+(startPerson:IndexPerson)-[:APPEARS_IN]->
+(regest1:Regesta)<-[:APPEARS_IN]-(middlePerson:IndexPerson)
+-[:APPEARS_IN]->(regest2:Regesta)<-[:APPEARS_IN]-(endPerson:IndexPerson)
+WHERE startPerson.xmlId in ['RI003-002-P01291']
+AND endPerson.xmlId in ['RI003-002-P02526']
+RETURN DISTINCT startPerson.label, regest1.identifier, regest1.summary,
+middlePerson.label, regest2.identifier, regest2.summary, endPerson.label;
 
 // Robert II. von Flandern mit Regesten und weiteren Entitäten
-MATCH (n:IndexPerson)-[:PERSON_IN]->(r)--(e)
+MATCH (n:IndexPerson)-[:APPEARS_IN]->(r)--(e)
 WHERE n.label contains 'Robert II. von Flandern'
 RETURN *;
