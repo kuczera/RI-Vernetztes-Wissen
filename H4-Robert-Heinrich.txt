@@ -28,7 +28,7 @@ RETURN *;
 MATCH
 (startPerson:IndexPerson)-[:PERSON_IN]->
 (regest:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
-WHERE startPerson.registerId in ['H4P01822', 'Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg']
+WHERE startPerson.registerId in ['Robert II. von Flandern', 'Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg']
 AND startPerson.registerId <> endPerson.registerId
 WITH startPerson, endPerson, count(regest) as anzahl,
 collect(distinct(regest.identifier)) as idents
@@ -42,7 +42,7 @@ MATCH
 (regest1:Regesta)<-[:PERSON_IN]-(middlePerson:IndexPerson)
 -[:PERSON_IN]->(regest2:Regesta)<-[:PERSON_IN]-(endPerson:IndexPerson)
 WHERE startPerson.registerId in ['Heinrich, Herzog von Niederlothringen (1101-1106), Pfalzgraf III. von Lothringen, Graf von Limburg']
-AND endPerson.registerId in ['H4P01822']
+AND endPerson.registerId in ['Robert II. von Flandern']
 AND startPerson.registerId <> endPerson.registerId
 RETURN DISTINCT startPerson.name1, regest1.identifier, regest1.summary,
 middlePerson.name1, regest2.identifier, regest2.summary, endPerson.name1;
